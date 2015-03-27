@@ -15,6 +15,11 @@ function pause(){
    read -p "$*"
 }
 
+ELASTICSEARCH_VERSION="elasticsearch-1.5.0.deb"
+MONGODB_VERSION=""
+GRAYLOGSERVER_VERSION="graylog-1.0.1.tgz"
+GRAYLOGWEB_VERSION="graylog-web-interface-1.0.1.tgz"
+
 # Checking if running as root (10/16/2013 - No longer an issue - Should be ran as root or with sudo)
 # Do not run as root
 # if [[ $EUID -eq 0 ]];then
@@ -43,9 +48,9 @@ apt-get -y install git curl build-essential openjdk-7-jre pwgen wget netcat
 # Download Elasticsearch, Graylog2-Server and Graylog2-Web-Interface
 echo "Downloading Elastic Search, Graylog2-Server and Graylog2-Web-Interface to /opt"
 cd /opt
-wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.4.2.deb
-wget http://packages.graylog2.org/releases/graylog2-server/graylog2-server-0.92.4.tgz
-wget http://packages.graylog2.org/releases/graylog2-web-interface/graylog2-web-interface-0.92.4.tgz
+wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.5.0.deb
+wget https://packages.graylog2.org/releases/graylog2-server/graylog-1.0.1.tgz
+wget https://packages.graylog2.org/releases/graylog2-web-interface/graylog-web-interface-1.0.1.tgz
 
 # Extract files
 echo "Extracting Graylog2-Server and Graylog2-Web-Interface to /opt"
@@ -60,7 +65,7 @@ ln -s graylog2-server-0.9*/ graylog2-server
 
 # Install elasticsearch
 echo "Installing elasticsearch"
-dpkg -i elasticsearch-1.4.2.deb
+dpkg -i ELASTICSEARCH_VERSION
 sed -i -e 's|#cluster.name: elasticsearch|cluster.name: graylog2|' /etc/elasticsearch/elasticsearch.yml
 
 # Making elasticsearch start on boot
@@ -92,11 +97,9 @@ echo "elasticsearch hard nofile 32000" >> /etc/security/limits.conf
 echo "# End of file" >> /etc/security/limits.conf
 
 # Install graylog2-server
-echo "Installing graylog2-server"
-echo -n "Enter a password to use for the admin account to login to the Graylog2 webUI: "
-read adminpass
-echo "You entered $adminpass (MAKE SURE TO NOT FORGET THIS PASSWORD!)"
-pause 'Press [Enter] key to continue...'
+
+adminpass="password"
+
 cd graylog2-server/
 cp /opt/graylog2-server/graylog2.conf{.example,}
 mv graylog2.conf /etc/
@@ -344,7 +347,7 @@ chown -R root:root /opt/graylog2*
 echo "Cleaning up"
 rm /opt/graylog2-server*.*gz
 rm /opt/graylog2-web-interface*.*gz
-rm /opt/elasticsearch-1.4.2.deb
+rm /opt/ELASTICSEARCH_VERSION
 
 # Restart All Services
 echo "Restarting All Services Required for Graylog2 to work"
