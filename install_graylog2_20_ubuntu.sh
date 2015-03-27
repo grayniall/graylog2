@@ -88,11 +88,7 @@ echo "elasticsearch hard nofile 32000" >> /etc/security/limits.conf
 echo "# End of file" >> /etc/security/limits.conf
 
 # Install graylog2-server
-echo "Installing graylog2-server"
-echo -n "Enter a password to use for the admin account to login to the Graylog2 webUI: "
-read adminpass
-echo "You entered $adminpass (MAKE SURE TO NOT FORGET THIS PASSWORD!)"
-pause 'Press [Enter] key to continue...'
+adminpass="password"
 cd graylog2-server/
 cp /opt/graylog2-server/graylog2.conf{.example,}
 mv graylog2.conf /etc/
