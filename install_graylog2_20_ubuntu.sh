@@ -15,17 +15,13 @@ function pause(){
    read -p "$*"
 }
 
-# Checking if running as root (10/16/2013 - No longer an issue - Should be ran as root or with sudo)
-# Do not run as root
-# if [[ $EUID -eq 0 ]];then
-# echo "$(tput setaf 1)DO NOT RUN AS ROOT or use SUDO"
-# echo "Now exiting...Hit Return"
-# echo "$(tput setaf 3)Run script as normal non-root user and without sudo$(tput sgr0)"
-# exit 1
-# fi
+ELASTICSEARCH_VERSION="elasticsearch-1.5.0.deb"
+MONGODB_VERSION=""
+GRAYLOGSERVER_VERSION="graylog-1.0.1.tgz"
+GRAYLOGWEB_VERSION="graylog-web-interface-1.0.1.tgz"
 
 echo "Detecting IP Address"
-IPADDY="$(ifconfig | grep -A 1 'eth0' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)"
+IPADDY="$(ifconfig | grep -A 1 'eth1' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)"
 echo "Detected IP Address is $IPADDY"
 
 SERVERNAME=$IPADDY
@@ -43,9 +39,9 @@ apt-get -y install git curl build-essential openjdk-7-jre pwgen wget
 # Download Elasticsearch, Graylog2-Server and Graylog2-Web-Interface
 echo "Downloading Elastic Search, Graylog2-Server and Graylog2-Web-Interface to /opt"
 cd /opt
-wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.10.deb
-wget https://github.com/Graylog2/graylog2-server/releases/download/0.20.6/graylog2-server-0.20.6.tgz
-wget https://github.com/Graylog2/graylog2-web-interface/releases/download/0.20.6/graylog2-web-interface-0.20.6.tgz
+wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.5.0.deb
+wget https://packages.graylog2.org/releases/graylog2-server/graylog-1.0.1.tgz
+wget https://packages.graylog2.org/releases/graylog2-web-interface/graylog-web-interface-1.0.1.tgz
 
 # Extract files
 echo "Extracting Graylog2-Server and Graylog2-Web-Interface to /opt"
@@ -60,7 +56,7 @@ ln -s graylog2-server-0.2*/ graylog2-server
 
 # Install elasticsearch
 echo "Installing elasticsearch"
-dpkg -i elasticsearch-0.90.10.deb
+dpkg -i ELASTICSEARCH_VERSION
 sed -i -e 's|# cluster.name: elasticsearch|cluster.name: graylog2|' /etc/elasticsearch/elasticsearch.yml
 
 # Making elasticsearch start on boot
@@ -344,7 +340,7 @@ chown -R root:root /opt/graylog2*
 echo "Cleaning up"
 rm /opt/graylog2-server*.*gz
 rm /opt/graylog2-web-interface*.*gz
-rm /opt/elasticsearch-0.90.10.deb
+rm /opt/ELASTICSEARCH_VERSION
 
 # Restart All Services
 echo "Restarting All Services Required for Graylog2 to work"
