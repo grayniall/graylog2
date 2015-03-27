@@ -88,8 +88,9 @@ echo "elasticsearch hard nofile 32000" >> /etc/security/limits.conf
 echo "# End of file" >> /etc/security/limits.conf
 
 # Install graylog2-server
-adminpass="password"
-cd graylog2-server/
+adminpass='password'
+
+cd /opt/graylog2-server/
 cp /opt/graylog2-server/graylog2.conf{.example,}
 mv graylog2.conf /etc/
 #ln -s /opt/graylog2-server/graylog2.conf /etc/graylog2.conf
