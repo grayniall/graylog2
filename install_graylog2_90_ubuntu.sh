@@ -65,7 +65,7 @@ ln -s graylog2-server-0.9*/ graylog2-server
 
 # Install elasticsearch
 echo "Installing elasticsearch"
-dpkg -i ELASTICSEARCH_VERSION
+dpkg -i $ELASTICSEARCH_VERSION
 sed -i -e 's|#cluster.name: elasticsearch|cluster.name: graylog2|' /etc/elasticsearch/elasticsearch.yml
 
 # Making elasticsearch start on boot
@@ -347,7 +347,7 @@ chown -R root:root /opt/graylog2*
 echo "Cleaning up"
 rm /opt/graylog2-server*.*gz
 rm /opt/graylog2-web-interface*.*gz
-rm /opt/ELASTICSEARCH_VERSION
+rm /opt/$ELASTICSEARCH_VERSION
 
 # Restart All Services
 echo "Restarting All Services Required for Graylog2 to work"
