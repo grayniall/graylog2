@@ -1,12 +1,12 @@
 #!/bin/bash
 password="password123"
 
-case $DISTR in
-     ubuntu)
-	    apt-get update
+case $1 in
+     "ubuntu")
+		apt-get update
 		apt-get install -y git
         ;;
-     centos|rhel)
+     "centos")
        	yum -y update
 		yum -y install git
         ;;
