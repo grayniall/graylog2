@@ -1,67 +1,51 @@
-#!/bin/bash -x
+#!/bin/bash
 #Provided by @mrlesmithjr
 #EveryThingShouldBeVirtual.com
+
+# Ubuntu Install Script
+
+set -e
+# Setup logging
+# Logs stderr and stdout to separate files.
+exec 2> >(tee "./graylog2/install_graylog2.err")
+exec > >(tee "./graylog2/install_graylog2.log")
 
 # Setup Pause function
 function pause(){
    read -p "$*"
 }
 
-#updated by Boardstretcher
+# Checking if running as root (10/16/2013 - No longer an issue - Should be ran as root or with sudo)
+# Do not run as root
+# if [[ $EUID -eq 0 ]];then
+# echo "$(tput setaf 1)DO NOT RUN AS ROOT or use SUDO"
+# echo "Now exiting...Hit Return"
+# echo "$(tput setaf 3)Run script as normal non-root user and without sudo$(tput sgr0)"
+# exit 1
+# fi
 
-EPEL_REPO="/etc/yum.repos.d/epel.repo"
-
-echo "Creating $EPEL_REPO"
-cat << 'EOF' > ${EPEL_REPO}
-[epel]
-name=Extra Packages for Enterprise Linux 6 - $basearch
-#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch
-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch
-failovermethod=priority
-enabled=1
-gpgcheck=0
-EOF
-
-# update system 
-yum update -y 
-  
-# disable ip6 
-echo "" >> /etc/sysctl.conf 
-echo "# Disable IPV6" >> /etc/sysctl.conf 
-echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf 
-echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf 
-chkconfig ip6tables off
-chkconfig  iptables off
-/etc/init.d/iptables stop
-/etc/init.d/ip6tables stop
-  
-# disable selinux 
-sed -i 's/\=enforcing/\=disabled/g' /etc/selinux/config 
-
-# reboot
-
-# Setup logging
-exec 2> >(tee "./graylog2/install_graylog2.err")
-exec > >(tee "./graylog2/install_graylog2.log")
-
-# Apache Settings
+echo "Detecting IP Address"
 IPADDY="$(ifconfig | grep -A 1 'eth0' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)"
+echo "Detected IP Address is $IPADDY"
+
 SERVERNAME=$IPADDY
 SERVERALIAS=$IPADDY
 
-# Installing all pre-reqs
-yum install -y gcc gcc-c++ gd gd-devel glibc glibc-common glibc-devel glibc-headers make automake wget tar vim nc libcurl-devel openssl-devel zlib-devel zlib patch readline readline-devel libffi-devel curl-devel libyaml-devel libtoolbisonlibxml2-devel libxslt-devel libtool bison pwgen nc
+# Disable CD Sources in /etc/apt/sources.list
+echo "Disabling CD Sources and Updating Apt Packages and Installing Pre-Reqs"
+sed -i -e 's|deb cdrom:|# deb cdrom:|' /etc/apt/sources.list
+apt-get -qq update
 
-#install sun java (unless you like crashes, in that case use openjdk)
-curl -L http://javadl.sun.com/webapps/download/AutoDL?BundleId=80804 -o java.rpm
-rpm -ivh java.rpm
+# Install Pre-Reqs
+# apt-get -y install git curl libcurl4-openssl-dev libapr1-dev libcurl4-openssl-dev libapr1-dev build-essential openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev ncurses-dev automake libtool bison subversion pkg-config python-software-properties software-properties-common openjdk-7-jre pwgen
+apt-get -y install git curl build-essential openjdk-7-jre pwgen wget
 
 # Download Elasticsearch, Graylog2-Server and Graylog2-Web-Interface
 echo "Downloading Elastic Search, Graylog2-Server and Graylog2-Web-Interface to /opt"
 cd /opt
-wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.10.noarch.rpm
-wget http://packages.graylog2.org/releases/graylog2-server/graylog2-server-0.90.0.tgz
-wget http://packages.graylog2.org/releases/graylog2-web-interface/graylog2-web-interface-0.90.0.tgz
+wget -q https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.10.deb
+wget -q https://github.com/Graylog2/graylog2-server/releases/download/0.20.6/graylog2-server-0.20.6.tgz
+wget -q https://github.com/Graylog2/graylog2-web-interface/releases/download/0.20.6/graylog2-web-interface-0.20.6.tgz
 
 # Extract files
 echo "Extracting Graylog2-Server and Graylog2-Web-Interface to /opt"
@@ -72,12 +56,15 @@ done
 
 # Create Symbolic Links
 echo "Creating SymLink Graylog2-server"
-ln -s graylog2-server-0.9*/ graylog2-server
+ln -s graylog2-server-0.2*/ graylog2-server
 
-# Install elasticsearch and start
+# Install elasticsearch
 echo "Installing elasticsearch"
-rpm -ivh elasticsearch-0.90.10.noarch.rpm
+dpkg -i elasticsearch-0.90.10.deb
 sed -i -e 's|# cluster.name: elasticsearch|cluster.name: graylog2|' /etc/elasticsearch/elasticsearch.yml
+
+# Making elasticsearch start on boot
+sudo update-rc.d elasticsearch defaults 95 10
 
 # Restart elasticsearch
 service elasticsearch restart
@@ -86,22 +73,23 @@ service elasticsearch restart
 # curl -XGET 'http://localhost:9200/_cluster/health?pretty=true'
 
 # Install mongodb
-(
-cat <<'EOF'
-[10gen]
-name=10gen Repository
-baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64
-gpgcheck=0
-enabled=1
-EOF
-) | tee /etc/yum.repos.d/10gen.repo
-
-yum install -y mongo-10gen-server && /etc/init.d/mongod start
+echo "Installing MongoDB"
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" | tee /etc/apt/sources.list.d/10gen.list
+apt-get -qq update
+apt-get -y install mongodb-10gen
 
 # Waiting for MongoDB to start accepting connections on tcp/27017
 echo "!!!*** Waiting for MongoDB to start accepting connections ***!!!"
 echo "This could take a while so connection timeouts below are normal!"
 while ! nc -vz localhost 27017; do sleep 1; done
+
+# Making changes to /etc/security/limits.conf to allow more open files for elasticsearch
+mv /etc/security/limits.conf /etc/security/limits.bak
+grep -Ev "# End of file" /etc/security/limits.bak > /etc/security/limits.conf
+echo "elasticsearch soft nofile 32000" >> /etc/security/limits.conf
+echo "elasticsearch hard nofile 32000" >> /etc/security/limits.conf
+echo "# End of file" >> /etc/security/limits.conf
 
 # Install graylog2-server
 echo "Installing graylog2-server"
@@ -112,9 +100,11 @@ pause 'Press [Enter] key to continue...'
 cd graylog2-server/
 cp /opt/graylog2-server/graylog2.conf{.example,}
 mv graylog2.conf /etc/
+#ln -s /opt/graylog2-server/graylog2.conf /etc/graylog2.conf
 pass_secret=$(pwgen -s 96)
-admin_pass_hash=$(echo -n $adminpass|sha256sum|awk '{print $1}')
 sed -i -e 's|password_secret =|password_secret = '$pass_secret'|' /etc/graylog2.conf
+#root_pass_sha2=$(echo -n password123 | shasum -a 256)
+admin_pass_hash=$(echo -n $adminpass|sha256sum|awk '{print $1}')
 sed -i -e "s|root_password_sha2 =|root_password_sha2 = $admin_pass_hash|" /etc/graylog2.conf
 sed -i -e 's|elasticsearch_shards = 4|elasticsearch_shards = 1|' /etc/graylog2.conf
 sed -i -e 's|mongodb_useauth = true|mongodb_useauth = false|' /etc/graylog2.conf
@@ -132,8 +122,6 @@ echo "Creating /etc/init.d/graylog2-server startup script"
 (
 cat <<'EOF'
 #!/bin/bash
-
-# chkconfig:   2345 85 15
 
 ### BEGIN INIT INFO
 # Provides:          graylog2-server
@@ -222,8 +210,10 @@ EOF
 chmod +x /etc/init.d/graylog2-server
 
 # Start graylog2-server on bootup
-chkconfig --add graylog2-server
-chkconfig graylog2-server on
+echo "Making graylog2-server startup on boot"
+update-rc.d graylog2-server defaults
+
+echo "Starting graylog2-server"
 service graylog2-server start
 
 # Waiting for Graylog2-Server to start accepting requests on tcp/12900
@@ -233,14 +223,12 @@ while ! nc -vz localhost 12900; do sleep 1; done
 # Install graylog2 web interface
 echo "Installing graylog2-web-interface"
 cd /opt/
-ln -s graylog2-web-interface-0.9*/ graylog2-web-interface
+ln -s graylog2-web-interface-0.2*/ graylog2-web-interface
 
 echo "Creating Graylog2-web-interface startup script"
 (
 cat <<'EOF'
 #!/bin/sh
-
-# chkconfig:   2345 90 10
 
 ### BEGIN INIT INFO
 # Provides:          graylog2-web-interface
@@ -325,12 +313,14 @@ EOF
 # Make graylog2-web-interface executable
 chmod +x /etc/init.d/graylog2-web-interface
 
-# Start graylog2-server on bootup
-chkconfig --add graylog2-web-interface
-chkconfig graylog2-web-interface on
+# Start graylog2-web-interface on bootup
+echo "Making graylog2-web-interface startup on boot"
+update-rc.d graylog2-web-interface defaults
 
 # Now we need to modify some things to get rsyslog to forward to graylog. this is useful for ESXi syslog format to be correct.
 echo "Updating graylog2.conf and rsyslog.conf"
+#sed -i -e 's|syslog_listen_port = 514|syslog_listen_port = 10514|' /etc/graylog2.conf
+#sed -i -e 's|#$ModLoad immark|$ModLoad immark|' /etc/rsyslog.conf
 sed -i -e 's|#$ModLoad imudp|$ModLoad imudp|' /etc/rsyslog.conf
 sed -i -e 's|#$UDPServerRun 514|$UDPServerRun 514|' /etc/rsyslog.conf
 sed -i -e 's|#$ModLoad imtcp|$ModLoad imtcp|' /etc/rsyslog.conf
@@ -348,14 +338,18 @@ sed -i -e 's|application.secret=""|application.secret="'$app_secret'"|' /opt/gra
 # Fixing /opt/graylog2-web-interface Permissions
 echo "Fixing Graylog2 Web Interface Permissions"
 chown -R root:root /opt/graylog2*
+#chown -R www-data:www-data /opt/graylog2-web-interface*
 
 # Cleaning up /opt
 echo "Cleaning up"
 rm /opt/graylog2-server*.*gz
 rm /opt/graylog2-web-interface*.*gz
-rm /opt/elasticsearch-0.90.10.noarch.rpm
+rm /opt/elasticsearch-0.90.10.deb
 
-# Restart rsyslog
+# Restart All Services
+echo "Restarting All Services Required for Graylog2 to work"
+# service elasticsearch restart
+# service mongodb restart
 service rsyslog restart
 
 echo "Starting graylog2-web-interface"
@@ -372,5 +366,3 @@ echo "You Entered $SERVERNAME During Install"
 echo "Browse to http://$SERVERNAME:9000 If Different"
 echo "EveryThingShouldBeVirtual.com"
 echo "@mrlesmithjr"
-
-exit
