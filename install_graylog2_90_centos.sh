@@ -372,3 +372,5 @@ echo "You Entered $SERVERNAME During Install"
 echo "Browse to http://$SERVERNAME:9000 If Different"
 echo "EveryThingShouldBeVirtual.com"
 echo "@mrlesmithjr"
+
+exit
