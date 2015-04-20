@@ -2,70 +2,73 @@
 #Provided by @mrlesmithjr
 #EveryThingShouldBeVirtual.com
 
-# Ubuntu Install Script
-
 set -e
 # Setup logging
 # Logs stderr and stdout to separate files.
 exec 2> >(tee "./graylog2/install_graylog2.err")
 exec > >(tee "./graylog2/install_graylog2.log")
 
+ELASTICSEARCH_VERSION="elasticsearch-1.5.0.deb"
+MONGODB_VERSION=""
+
+GRAYLOGSERVER_VERSION="graylog-1.0.1"
+GRAYLOGSERVER_FILE="$GRAYLOGSERVER_VERSION.tgz"
+GRAYLOGWEB_VERSION="graylog-web-interface-1.0.1"
+GRAYLOGWEB_FILE="$GRAYLOGWEB_VERSION.tgz"
+
+DOWNLOAD_DIRECTORY="/opt"
+GRAYLOG_CONFIG_FILE="/etc/graylog.conf"
+
 # Setup Pause function
 function pause(){
    read -p "$*"
 }
 
-ELASTICSEARCH_VERSION="elasticsearch-1.5.0.deb"
-MONGODB_VERSION=""
-GRAYLOGSERVER_VERSION="graylog-1.0.1.tgz"
-GRAYLOGWEB_VERSION="graylog-web-interface-1.0.1.tgz"
+function DownloadAndExtract() {
+	echo $1
+	wget -q -P "$DOWNLOAD_DIRECTORY" $1
+	
+	if [ ! -z "$2" ]
+	then
+		tar zxf "$DOWNLOAD_DIRECTORY/$2" -C "$DOWNLOAD_DIRECTORY"
+		mv "$DOWNLOAD_DIRECTORY/$3" "$DOWNLOAD_DIRECTORY/$4"
+	fi	
+	echo "Done"
+}
 
-# Checking if running as root (10/16/2013 - No longer an issue - Should be ran as root or with sudo)
-# Do not run as root
-# if [[ $EUID -eq 0 ]];then
-# echo "$(tput setaf 1)DO NOT RUN AS ROOT or use SUDO"
-# echo "Now exiting...Hit Return"
-# echo "$(tput setaf 3)Run script as normal non-root user and without sudo$(tput sgr0)"
-# exit 1
-# fi
+function InstallPreReqs() {
+	echo "Disabling CD Sources and Updating Apt Packages and Installing Pre-Reqs"
+	sed -i -e 's|deb cdrom:|# deb cdrom:|' /etc/apt/sources.list
+	
+	apt-get -qq update
+	apt-get -y install git curl build-essential openjdk-7-jre pwgen wget netcat
+}
 
-echo "Detecting IP Address"
-IPADDY="$(ifconfig | grep -A 1 'eth0' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)"
-echo "Detected IP Address is $IPADDY"
+function GetIPAddress() {
+	echo "Detecting IP Address"
+	IPADDY="$(ifconfig | grep -A 1 'eth0' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)"
+	echo "Detected IP Address is $IPADDY"
 
-SERVERNAME=$IPADDY
-SERVERALIAS=$IPADDY
-#adminpass=
+	SERVERNAME=$IPADDY
+	SERVERALIAS=$IPADDY
+}
 
-# Disable CD Sources in /etc/apt/sources.list
-echo "Disabling CD Sources and Updating Apt Packages and Installing Pre-Reqs"
-sed -i -e 's|deb cdrom:|# deb cdrom:|' /etc/apt/sources.list
-apt-get -qq update
-
-# Install Pre-Reqs
-apt-get -y install git curl build-essential openjdk-7-jre pwgen wget netcat
+GetIPAddress
+InstallPreReqs
 
 # Download Elasticsearch, Graylog2-Server and Graylog2-Web-Interface
 echo "Downloading Elastic Search, Graylog2-Server and Graylog2-Web-Interface to /opt"
-cd /opt
-wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.5.0.deb
-wget https://packages.graylog2.org/releases/graylog2-server/graylog-1.0.1.tgz
-wget https://packages.graylog2.org/releases/graylog2-web-interface/graylog-web-interface-1.0.1.tgz
-
-# Extract files
-echo "Extracting Graylog2-Server and Graylog2-Web-Interface to /opt"
-  for f in *.*gz
-do
-tar zxf "$f"
-done
+DownloadAndExtract https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.5.0.deb
+DownloadAndExtract https://packages.graylog2.org/releases/graylog2-server/$GRAYLOGSERVER_FILE $GRAYLOGSERVER_FILE $GRAYLOGSERVER_VERSION "graylog2-server"
+DownloadAndExtract https://packages.graylog2.org/releases/graylog2-web-interface/$GRAYLOGWEB_FILE $GRAYLOGWEB_FILE $GRAYLOGWEB_VERSION "graylog2-web-interface"
 
 # Create Symbolic Links
-echo "Creating SymLink Graylog2-server"
-ln -s graylog2-server-0.9*/ graylog2-server
+#echo "Creating SymLink Graylog2-server"
+#ln -s $DOWNLOAD_DIRECTORY/graylog2-server/ /opt/graylog2-server
 
 # Install elasticsearch
 echo "Installing elasticsearch"
-dpkg -i $ELASTICSEARCH_VERSION
+dpkg -i $DOWNLOAD_DIRECTORY/$ELASTICSEARCH_VERSION
 sed -i -e 's|#cluster.name: elasticsearch|cluster.name: graylog2|' /etc/elasticsearch/elasticsearch.yml
 
 # Making elasticsearch start on boot
@@ -100,25 +103,24 @@ echo "# End of file" >> /etc/security/limits.conf
 
 adminpass="password"
 
-cd graylog2-server/
-cp /opt/graylog2-server/graylog2.conf{.example,}
-mv graylog2.conf /etc/
-#ln -s /opt/graylog2-server/graylog2.conf /etc/graylog2.conf
+cp $DOWNLOAD_DIRECTORY/graylog2-server/graylog.conf{.example,}
+mv $DOWNLOAD_DIRECTORY/graylog2-server/graylog.conf /etc/
+#ln -s /opt/graylog2-server/graylog2.conf $GRAYLOG_CONFIG_FILE
 pass_secret=$(pwgen -s 96)
-sed -i -e 's|password_secret =|password_secret = '$pass_secret'|' /etc/graylog2.conf
+sed -i -e 's|password_secret =|password_secret = '$pass_secret'|' $GRAYLOG_CONFIG_FILE
 #root_pass_sha2=$(echo -n password123 | shasum -a 256)
 admin_pass_hash=$(echo -n $adminpass|sha256sum|awk '{print $1}')
-sed -i -e "s|root_password_sha2 =|root_password_sha2 = $admin_pass_hash|" /etc/graylog2.conf
-sed -i -e 's|elasticsearch_shards = 4|elasticsearch_shards = 1|' /etc/graylog2.conf
-sed -i -e 's|mongodb_useauth = true|mongodb_useauth = false|' /etc/graylog2.conf
-sed -i -e 's|#elasticsearch_discovery_zen_ping_multicast_enabled = false|elasticsearch_discovery_zen_ping_multicast_enabled = false|' /etc/graylog2.conf
-sed -i -e 's|#elasticsearch_discovery_zen_ping_unicast_hosts = 192.168.1.203:9300|elasticsearch_discovery_zen_ping_unicast_hosts = 127.0.0.1:9300|' /etc/graylog2.conf
+sed -i -e "s|root_password_sha2 =|root_password_sha2 = $admin_pass_hash|" $GRAYLOG_CONFIG_FILE
+sed -i -e 's|elasticsearch_shards = 4|elasticsearch_shards = 1|' $GRAYLOG_CONFIG_FILE
+sed -i -e 's|mongodb_useauth = true|mongodb_useauth = false|' $GRAYLOG_CONFIG_FILE
+sed -i -e 's|#elasticsearch_discovery_zen_ping_multicast_enabled = false|elasticsearch_discovery_zen_ping_multicast_enabled = false|' $GRAYLOG_CONFIG_FILE
+sed -i -e 's|#elasticsearch_discovery_zen_ping_unicast_hosts = 192.168.1.203:9300|elasticsearch_discovery_zen_ping_unicast_hosts = 127.0.0.1:9300|' $GRAYLOG_CONFIG_FILE
 
 # Setting new retention policy setting or Graylog2 Server will not start
-sed -i 's|retention_strategy = delete|retention_strategy = close|' /etc/graylog2.conf
+sed -i 's|retention_strategy = delete|retention_strategy = close|' $GRAYLOG_CONFIG_FILE
 
-# This setting is required as of v0.20.2 in /etc/graylog2.conf
-sed -i -e 's|#rest_transport_uri = http://192.168.1.1:12900/|rest_transport_uri = http://127.0.0.1:12900/|' /etc/graylog2.conf
+# This setting is required as of v0.20.2 in $GRAYLOG_CONFIG_FILE
+sed -i -e 's|#rest_transport_uri = http://192.168.1.1:12900/|rest_transport_uri = http://127.0.0.1:12900/|' $GRAYLOG_CONFIG_FILE
 
 # Create graylog2-server startup script
 echo "Creating /etc/init.d/graylog2-server startup script"
@@ -137,19 +139,14 @@ cat <<'EOF'
 ### END INIT INFO
 
 CMD=$1
-NOHUP=`which nohup`
 
-GRAYLOG2CTL_DIR="/opt/graylog2-server/bin"
-GRAYLOG2_SERVER_JAR=graylog2-server.jar
-GRAYLOG2_CONF=/etc/graylog2.conf
-GRAYLOG2_PID=/tmp/graylog2.pid
-LOG_FILE=log/graylog2-server.log
+GRAYLOG2_SERVER_CTL=/opt/graylog2-server/bin/graylogctl
+GRAYLOG2_CONF=/etc/graylog.conf
+LOG_FILE=/opt/graylog2-server/log/graylog2-server.log
 
 start() {
     echo "Starting graylog2-server ..."
-    cd "$GRAYLOG2CTL_DIR/.."
-#    sleep 2m
-    $NOHUP java -jar ${GRAYLOG2_SERVER_JAR} -f ${GRAYLOG2_CONF} -p ${GRAYLOG2_PID} >> ${LOG_FILE} &
+	${GRAYLOG2_SERVER_CTL} start -f ${GRAYLOG2_CONF}
 }
 
 stop() {
@@ -225,8 +222,7 @@ while ! nc -vz localhost 12900; do sleep 1; done
 
 # Install graylog2 web interface
 echo "Installing graylog2-web-interface"
-cd /opt/
-ln -s graylog2-web-interface-0.9*/ graylog2-web-interface
+ln -s $DOWNLOAD_DIRECTORY/graylog2-web-interface/ graylog2-web-interface
 
 echo "Creating Graylog2-web-interface startup script"
 (
@@ -322,7 +318,7 @@ update-rc.d graylog2-web-interface defaults
 
 # Now we need to modify some things to get rsyslog to forward to graylog. this is useful for ESXi syslog format to be correct.
 echo "Updating graylog2.conf and rsyslog.conf"
-#sed -i -e 's|syslog_listen_port = 514|syslog_listen_port = 10514|' /etc/graylog2.conf
+#sed -i -e 's|syslog_listen_port = 514|syslog_listen_port = 10514|' $GRAYLOG_CONFIG_FILE
 #sed -i -e 's|#$ModLoad immark|$ModLoad immark|' /etc/rsyslog.conf
 sed -i -e 's|#$ModLoad imudp|$ModLoad imudp|' /etc/rsyslog.conf
 sed -i -e 's|#$UDPServerRun 514|$UDPServerRun 514|' /etc/rsyslog.conf
@@ -345,9 +341,9 @@ chown -R root:root /opt/graylog2*
 
 # Cleaning up /opt
 echo "Cleaning up"
-rm /opt/graylog2-server*.*gz
-rm /opt/graylog2-web-interface*.*gz
-rm /opt/$ELASTICSEARCH_VERSION
+rm $DOWNLOAD_DIRECTORY/graylog2-server*.*gz
+rm $DOWNLOAD_DIRECTORY/graylog2-web-interface*.*gz
+rm $DOWNLOAD_DIRECTORY/$ELASTICSEARCH_VERSION
 
 # Restart All Services
 echo "Restarting All Services Required for Graylog2 to work"
