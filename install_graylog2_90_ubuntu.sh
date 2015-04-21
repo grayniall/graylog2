@@ -47,7 +47,7 @@ function InstallPreReqs() {
 
 function GetIPAddress() {
 	echo "Detecting IP Address"
-	IPADDY="$(ifconfig | grep -A 1 'eth0' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)"
+	IPADDY="$(ifconfig | grep -A 1 'eth1' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)"
 	echo "Detected IP Address is $IPADDY"
 
 	SERVERNAME=$IPADDY
@@ -344,9 +344,8 @@ chown -R root:root /opt/graylog2*
 
 # Cleaning up /opt
 echo "Cleaning up"
-rm $DOWNLOAD_DIRECTORY/graylog-server*.*gz
-rm $DOWNLOAD_DIRECTORY/graylog-web-interface*.*gz
-rm $DOWNLOAD_DIRECTORY/$ELASTICSEARCH_VERSION
+rm $DOWNLOAD_DIRECTORY/*tgz -f
+rm $DOWNLOAD_DIRECTORY/*deb -f
 
 # Restart All Services
 echo "Restarting All Services Required for Graylog2 to work"
