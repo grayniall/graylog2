@@ -245,14 +245,14 @@ cat <<'EOF'
 CMD=$1
 NOHUP=`which nohup`
 JAVA_CMD=/usr/bin/java
-GRAYLOG2_WEB_INTERFACE_HOME=/opt/graylog-web-interface
+GRAYLOG2_WEB_INTERFACE_HOME=/opt/graylog2-web-interface
 
 GRAYLOG2_WEB_INTERFACE_PID=/opt/graylog2-web-interface/RUNNING_PID
 
 start() {
 echo "Starting graylog2-web-interface ..."
 #sleep 3m
-$NOHUP /opt/graylog2-web-interface/bin/graylog2-web-interface &
+$NOHUP /opt/graylog2-web-interface/bin/graylog-web-interface &
 }
 
 stop() {
