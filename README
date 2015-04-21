@@ -1,3 +1,11 @@
+Updated to use:
+Graylog Server v1.0.1
+Graylog Web Interface v1.0.1
+ElasticSearch v1.5.0
+Mongo 10Gen
+
+----------------------------------------------------------------------------------------------------------------------------
+
 This installation script will perform an automated install of Graylog2 on Ubuntu 12.04/12.10/13.10/14.04 and will be updated as times goes on
 
 contact me on the twitters @mrlesmithjr
