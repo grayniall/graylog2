@@ -9,7 +9,7 @@ apt-get update
 apt-get install -y git
 
 # Pull down latest graylog2 install scripts
-git clone https://github.com/mrlesmithjr/graylog2
+git clone -b feature/upgrade https://github.com/GrayNiall/graylog2
 
 # Change password123 below to a different password for graylog2 login
 sed -i -e 's|#adminpass=|adminpass='$password'|' ./graylog2/install_graylog2_90_ubuntu.sh

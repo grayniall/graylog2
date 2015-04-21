@@ -2,20 +2,19 @@
 #EveryThingShouldBeVirtual.com
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "mrlesmithjr/ubuntu-14.04-base"
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.network "public_network"
+  config.vm.network :forwarded_port, guest: 514, host: 1514, protocol: 'tcp'
+  config.vm.network :forwarded_port, guest: 514, host: 1514, protocol: 'udp'
+  config.vm.network :forwarded_port, guest: 9000, host: 9000
+  config.vm.network :forwarded_port, guest: 12900, host: 12900
+  config.vm.network :forwarded_port, guest: 12201, host: 12201, protocol: 'udp'
+  config.vm.network :forwarded_port, guest: 12201, host: 12201, protocol: 'tcp'
+	
   config.vm.provider "virtualbox" do |vb|
-    vb.name = "graylog2-server"
+    vb.name = "graylog2-server-1"
+	vb.gui = true
     vb.memory = "2048"
     vb.cpus = "2"  
-  end
-  config.vm.define :server do |srv|
-    srv.vm.hostname = "graylog2-server"
-    srv.vm.network :forwarded_port, guest: 514, host: 1514, protocol: 'tcp'
-    srv.vm.network :forwarded_port, guest: 514, host: 1514, protocol: 'udp'
-    srv.vm.network :forwarded_port, guest: 9000, host: 9000
-    srv.vm.network :forwarded_port, guest: 12900, host: 12900
-    srv.vm.network :forwarded_port, guest: 12201, host: 12201, protocol: 'udp'
-    srv.vm.network :forwarded_port, guest: 12201, host: 12201, protocol: 'tcp'
-    srv.vm.provision :shell, path: "provision.sh"
   end
 end
