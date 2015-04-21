@@ -104,7 +104,7 @@ echo "# End of file" >> /etc/security/limits.conf
 adminpass="password"
 
 cp $DOWNLOAD_DIRECTORY/graylog2-server/graylog.conf{.example,}
-mv $DOWNLOAD_DIRECTORY/graylog2-server/graylog.conf /etc/
+mv $DOWNLOAD_DIRECTORY/graylog2-server/graylog.conf /etc/graylog/server/server.conf
 #ln -s /opt/graylog2-server/graylog2.conf $GRAYLOG_CONFIG_FILE
 pass_secret=$(pwgen -s 96)
 sed -i -e 's|password_secret =|password_secret = '$pass_secret'|' $GRAYLOG_CONFIG_FILE
@@ -145,7 +145,6 @@ GRAYLOG2_CONF=/etc/graylog.conf
 LOG_FILE=/opt/graylog2-server/log/graylog2-server.log
 
 start() {
-    echo "Starting graylog2-server ..."
 	${GRAYLOG2_SERVER_CTL} start -f ${GRAYLOG2_CONF}
 }
 
