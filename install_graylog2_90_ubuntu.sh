@@ -18,6 +18,7 @@ GRAYLOGWEB_FILE="$GRAYLOGWEB_VERSION.tgz"
 
 DOWNLOAD_DIRECTORY="/opt"
 GRAYLOG_CONFIG_FILE="/etc/graylog.conf"
+GRAYLOG_WEB_CONFIG_FILE="/opt/graylog2-web-interface/conf/graylog-web-interface.conf"
 
 # Setup Pause function
 function pause(){
@@ -329,9 +330,9 @@ echo '$template GRAYLOG2-2,"<%pri%>1 %timegenerated:::date-rfc3339% %fromhost% %
 echo '$template GRAYLOGRFC5424,"<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msg%\n"' | tee -a /etc/rsyslog.d/32-graylog2.conf
 echo '$PreserveFQDN on' | tee -a  /etc/rsyslog.d/32-graylog2.conf
 echo '*.* @localhost:10514;GRAYLOG2-2' | tee -a  /etc/rsyslog.d/32-graylog2.conf
-sed -i -e 's|graylog2-server.uris=""|graylog2-server.uris="http://127.0.0.1:12900/"|' /opt/graylog2-web-interface/conf/graylog2-web-interface.conf
+sed -i -e 's|graylog2-server.uris=""|graylog2-server.uris="http://127.0.0.1:12900/"|' $GRAYLOG_WEB_CONFIG_FILE
 app_secret=$(pwgen -s 96)
-sed -i -e 's|application.secret=""|application.secret="'$app_secret'"|' /opt/graylog2-web-interface/conf/graylog2-web-interface.conf
+sed -i -e 's|application.secret=""|application.secret="'$app_secret'"|' $GRAYLOG_WEB_CONFIG_FILE
 
 # Fixing /opt/graylog2-web-interface Permissions
 echo "Fixing Graylog2 Web Interface Permissions"
