@@ -145,6 +145,7 @@ CMD=$1
 
 GRAYLOG2_SERVER_CTL=/opt/graylog2-server/bin/graylogctl
 GRAYLOG2_CONF=/etc/graylog.conf
+GRAYLOG2_PID=/tmp/graylog2.pid
 LOG_FILE=/opt/graylog2-server/log/graylog2-server.log
 
 start() {
@@ -244,7 +245,7 @@ cat <<'EOF'
 CMD=$1
 NOHUP=`which nohup`
 JAVA_CMD=/usr/bin/java
-GRAYLOG2_WEB_INTERFACE_HOME=/opt/graylog2-web-interface
+GRAYLOG2_WEB_INTERFACE_HOME=/opt/graylog-web-interface
 
 GRAYLOG2_WEB_INTERFACE_PID=/opt/graylog2-web-interface/RUNNING_PID
 
@@ -343,14 +344,14 @@ chown -R root:root /opt/graylog2*
 
 # Cleaning up /opt
 echo "Cleaning up"
-rm $DOWNLOAD_DIRECTORY/graylog2-server*.*gz
-rm $DOWNLOAD_DIRECTORY/graylog2-web-interface*.*gz
+rm $DOWNLOAD_DIRECTORY/graylog-server*.*gz
+rm $DOWNLOAD_DIRECTORY/graylog-web-interface*.*gz
 rm $DOWNLOAD_DIRECTORY/$ELASTICSEARCH_VERSION
 
 # Restart All Services
 echo "Restarting All Services Required for Graylog2 to work"
-# service elasticsearch restart
-# service mongodb restart
+service elasticsearch restart
+service mongodb restart
 service rsyslog restart
 
 echo "Starting graylog2-web-interface"

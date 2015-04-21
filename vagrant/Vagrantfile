@@ -10,7 +10,8 @@ Vagrant.configure(2) do |config|
   config.vm.network :forwarded_port, guest: 12900, host: 12900
   config.vm.network :forwarded_port, guest: 12201, host: 12201, protocol: 'udp'
   config.vm.network :forwarded_port, guest: 12201, host: 12201, protocol: 'tcp'
-	
+  config.vm.provision :shell, path: "provision.sh"
+  
   config.vm.provider "virtualbox" do |vb|
     vb.name = "graylog2-server-1"
 	vb.gui = true

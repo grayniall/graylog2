@@ -16,7 +16,6 @@ sed -i -e 's|#adminpass=|adminpass='$password'|' ./graylog2/install_graylog2_90_
 sed -i -e 's|echo -n "Enter a password to use for the admin account to login to the Graylog2 webUI: "|#echo -n "Enter a password to use for the admin account to login to the Graylog2 webUI: "|' ./graylog2/install_graylog2_90_ubuntu.sh
 sed -i -e 's|read adminpass|#read adminpass|' ./graylog2/install_graylog2_90_ubuntu.sh
 sed -i -e 's|pause 'Press [Enter] key to continue...'|#pause 'Press [Enter] key to continue...'|' ./graylog2/install_graylog2_90_ubuntu.sh
-sed -i -e 's|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog/server/server.conf}|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog.conf}|' /opt/graylog2-server/bin/graylogctl
 
 chmod +x ./graylog2/install_graylog2_90_ubuntu.sh
 ./graylog2/install_graylog2_90_ubuntu.sh
