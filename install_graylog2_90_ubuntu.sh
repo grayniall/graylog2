@@ -123,6 +123,8 @@ sed -i 's|retention_strategy = delete|retention_strategy = close|' $GRAYLOG_CONF
 # This setting is required as of v0.20.2 in $GRAYLOG_CONFIG_FILE
 sed -i -e 's|#rest_transport_uri = http://192.168.1.1:12900/|rest_transport_uri = http://127.0.0.1:12900/|' $GRAYLOG_CONFIG_FILE
 
+# change config file path
+sed -i -e 's|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog/server/server.conf}|GRAYLOG_CONF=${GRAYLOG_CONF:='$GRAYLOG_CONFIG_FILE'}|' /opt/graylog2-server/bin/graylogctl
 # Create graylog2-server startup script
 echo "Creating /etc/init.d/graylog2-server startup script"
 (
