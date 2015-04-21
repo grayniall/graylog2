@@ -102,7 +102,7 @@ echo "# End of file" >> /etc/security/limits.conf
 
 # Install graylog2-server
 
-adminpass="password"
+#adminpass=
 
 cp $DOWNLOAD_DIRECTORY/graylog2-server/graylog.conf{.example,}
 mv $DOWNLOAD_DIRECTORY/graylog2-server/graylog.conf $GRAYLOG_CONFIG_FILE
