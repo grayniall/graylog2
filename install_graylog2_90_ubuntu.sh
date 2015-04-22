@@ -116,6 +116,7 @@ sed -i -e 's|elasticsearch_shards = 4|elasticsearch_shards = 1|' $GRAYLOG_CONFIG
 sed -i -e 's|mongodb_useauth = true|mongodb_useauth = false|' $GRAYLOG_CONFIG_FILE
 sed -i -e 's|#elasticsearch_discovery_zen_ping_multicast_enabled = false|elasticsearch_discovery_zen_ping_multicast_enabled = false|' $GRAYLOG_CONFIG_FILE
 sed -i -e 's|#elasticsearch_discovery_zen_ping_unicast_hosts = 192.168.1.203:9300|elasticsearch_discovery_zen_ping_unicast_hosts = 127.0.0.1:9300|' $GRAYLOG_CONFIG_FILE
+sed -i -e 's|#elasticsearch_max_time_per_index = 1d|elasticsearch_max_time_per_index = 5d|' $GRAYLOG_CONFIG_FILE
 
 # Setting new retention policy setting or Graylog2 Server will not start
 sed -i 's|retention_strategy = delete|retention_strategy = close|' $GRAYLOG_CONFIG_FILE
