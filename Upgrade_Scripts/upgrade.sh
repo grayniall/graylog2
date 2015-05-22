@@ -8,9 +8,6 @@ set -e
 exec 2> >(tee "./graylog2/install_graylog2.err")
 exec > >(tee "./graylog2/install_graylog2.log")
 
-ELASTICSEARCH_VERSION="elasticsearch-1.5.2.deb"
-MONGODB_VERSION=""
-
 GRAYLOGSERVER_VERSION="graylog-1.1.0-beta.2"
 GRAYLOGSERVER_FILE="$GRAYLOGSERVER_VERSION.tgz"
 GRAYLOGWEB_VERSION="graylog-web-interface-1.1.0-beta.2"
@@ -19,8 +16,6 @@ GRAYLOGWEB_FILE="$GRAYLOGWEB_VERSION.tgz"
 DOWNLOAD_DIRECTORY="/opt"
 GRAYLOG_CONFIG_FILE="/etc/graylog.conf"
 GRAYLOG_WEB_CONFIG_FILE="/opt/graylog2-web-interface/conf/graylog-web-interface.conf"
-
-
 
 # Setup Pause function
 function pause(){
@@ -48,11 +43,10 @@ function GetIPAddress() {
 	SERVERALIAS=$IPADDY
 }
 
-
 rm -rf /opt/graylog2-server*
 rm -rf /opt/graylog2-web-interface*
-rm /opt/graylog2-server*.*gz
-rm /opt/graylog2-web-interface*.*gz
+rm -f /opt/graylog2-server*.*gz
+rm -f /opt/graylog2-web-interface*.*gz
 
 GetIPAddress
 
@@ -61,7 +55,7 @@ DownloadAndExtract https://packages.graylog2.org/releases/graylog2-server/$GRAYL
 DownloadAndExtract https://packages.graylog2.org/releases/graylog2-web-interface/$GRAYLOGWEB_FILE $GRAYLOGWEB_FILE $GRAYLOGWEB_VERSION "graylog2-web-interface"
 
 sudo cp /opt/graylog2-web-interface/conf/graylog-web-interface.conf ~/graylog-web-interface.conf
-sed -i -e 's|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog/server/server.conf}|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog.conf}|' /etc/graylog2.conf
+sudo sed -i -e 's|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog/server/server.conf}|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog.conf}|' /opt/graylog2-server/bin/graylogctl
 
 service graylog2-server start
 
@@ -72,7 +66,6 @@ while ! nc -vz localhost 12900; do sleep 1; done
 # Fixing /opt/graylog2-web-interface Permissions
 echo "Fixing Graylog2 Web Interface Permissions"
 chown -R root:root /opt/graylog2*
-#chown -R www-data:www-data /opt/graylog2-web-interface*
 
 # Cleaning up /opt
 echo "Cleaning up"
@@ -90,13 +83,8 @@ echo "Starting graylog2-web-interface"
 service graylog2-web-interface start
 
 # All Done
-echo "Installation has completed!!"
+echo "Upgrade has completed!!"
 echo "Browse to IP address of this Graylog2 Server Used for Installation"
-echo "IP Address detected from system is $IPADDY"
-echo "Browse to http://$IPADDY:9000"
-echo "Login with username: admin"
-echo "Login with password: $adminpass"
-echo "You Entered $SERVERNAME During Install"
 echo "Browse to http://$SERVERNAME:9000 If Different"
 echo "EveryThingShouldBeVirtual.com"
 echo "@mrlesmithjr"
