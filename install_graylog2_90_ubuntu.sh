@@ -11,9 +11,9 @@ exec > >(tee "./graylog2/install_graylog2.log")
 ELASTICSEARCH_VERSION="elasticsearch-1.5.2.deb"
 MONGODB_VERSION=""
 
-GRAYLOGSERVER_VERSION="graylog-1.1.0-beta.2.tgz"
+GRAYLOGSERVER_VERSION="graylog-1.1.0-beta.2"
 GRAYLOGSERVER_FILE="$GRAYLOGSERVER_VERSION.tgz"
-GRAYLOGWEB_VERSION="graylog-web-interface-1.1.0-beta.2.tgz"
+GRAYLOGWEB_VERSION="graylog-web-interface-1.1.0-beta.2"
 GRAYLOGWEB_FILE="$GRAYLOGWEB_VERSION.tgz"
 
 DOWNLOAD_DIRECTORY="/opt"
