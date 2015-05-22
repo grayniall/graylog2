@@ -1,6 +1,7 @@
 #!/bin/bash
 password="password123"
 
+$1="ubuntu"
 case $1 in
      "ubuntu")
 		apt-get update
