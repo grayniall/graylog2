@@ -11,9 +11,9 @@ exec > >(tee "./graylog2/install_graylog2.log")
 ELASTICSEARCH_VERSION="elasticsearch-1.5.0.deb"
 MONGODB_VERSION=""
 
-GRAYLOGSERVER_VERSION="graylog-1.0.1"
+GRAYLOGSERVER_VERSION="graylog-server 1.1.0-beta.2"
 GRAYLOGSERVER_FILE="$GRAYLOGSERVER_VERSION.tgz"
-GRAYLOGWEB_VERSION="graylog-web-interface-1.0.1"
+GRAYLOGWEB_VERSION="graylog-web-interface 1.1.0-beta.2"
 GRAYLOGWEB_FILE="$GRAYLOGWEB_VERSION.tgz"
 
 DOWNLOAD_DIRECTORY="/opt"
@@ -83,10 +83,10 @@ service elasticsearch restart
 
 # Install mongodb
 echo "Installing MongoDB"
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" | tee /etc/apt/sources.list.d/10gen.list
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+echo "deb http://repo.mongodb.org/apt/ubuntu "$(lsb_release -sc)"/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
 apt-get -qq update
-apt-get -y install mongodb-10gen
+apt-get install -y mongodb-org
 
 # Waiting for MongoDB to start accepting connections on tcp/27017
 echo "!!!*** Waiting for MongoDB to start accepting connections ***!!!"
