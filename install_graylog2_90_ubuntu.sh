@@ -59,7 +59,7 @@ InstallPreReqs
 
 # Download Elasticsearch, Graylog2-Server and Graylog2-Web-Interface
 echo "Downloading Elastic Search, Graylog2-Server and Graylog2-Web-Interface to /opt"
-DownloadAndExtract https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.5.0.deb
+DownloadAndExtract https://download.elasticsearch.org/elasticsearch/elasticsearch/$ELASTICSEARCH_VERSION
 DownloadAndExtract https://packages.graylog2.org/releases/graylog2-server/$GRAYLOGSERVER_FILE $GRAYLOGSERVER_FILE $GRAYLOGSERVER_VERSION "graylog2-server"
 DownloadAndExtract https://packages.graylog2.org/releases/graylog2-web-interface/$GRAYLOGWEB_FILE $GRAYLOGWEB_FILE $GRAYLOGWEB_VERSION "graylog2-web-interface"
 
