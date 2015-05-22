@@ -351,7 +351,7 @@ rm $DOWNLOAD_DIRECTORY/*deb -f
 # Restart All Services
 echo "Restarting All Services Required for Graylog2 to work"
 service elasticsearch restart
-service mongodb restart
+service mongod restart
 service rsyslog restart
 
 echo "Starting graylog2-web-interface"
