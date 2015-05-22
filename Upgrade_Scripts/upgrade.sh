@@ -20,6 +20,8 @@ DOWNLOAD_DIRECTORY="/opt"
 GRAYLOG_CONFIG_FILE="/etc/graylog.conf"
 GRAYLOG_WEB_CONFIG_FILE="/opt/graylog2-web-interface/conf/graylog-web-interface.conf"
 
+
+
 # Setup Pause function
 function pause(){
    read -p "$*"
@@ -46,11 +48,20 @@ function GetIPAddress() {
 	SERVERALIAS=$IPADDY
 }
 
+
+rm -rf /opt/graylog2-server*
+rm -rf /opt/graylog2-web-interface*
+rm /opt/graylog2-server*.*gz
+rm /opt/graylog2-web-interface*.*gz
+
 GetIPAddress
 
 # Download Elasticsearch, Graylog2-Server and Graylog2-Web-Interface
 DownloadAndExtract https://packages.graylog2.org/releases/graylog2-server/$GRAYLOGSERVER_FILE $GRAYLOGSERVER_FILE $GRAYLOGSERVER_VERSION "graylog2-server"
 DownloadAndExtract https://packages.graylog2.org/releases/graylog2-web-interface/$GRAYLOGWEB_FILE $GRAYLOGWEB_FILE $GRAYLOGWEB_VERSION "graylog2-web-interface"
+
+sudo cp /opt/graylog2-web-interface/conf/graylog-web-interface.conf ~/graylog-web-interface.conf
+sed -i -e 's|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog/server/server.conf}|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog.conf}|' /etc/graylog2.conf
 
 service graylog2-server start
 
@@ -74,6 +85,7 @@ service elasticsearch restart
 service mongod restart
 service rsyslog restart
 
+sudo cp ~/graylog-web-interface.conf /opt/graylog2-web-interface/conf/graylog-web-interface.conf
 echo "Starting graylog2-web-interface"
 service graylog2-web-interface start
 
