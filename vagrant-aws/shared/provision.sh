@@ -13,7 +13,7 @@ case $1 in
 esac
 
 rm -rf ~/graylog2
-git clone https://github.com/mrlesmithjr/graylog2 ~/graylog2
+git clone https://github.com/grayniall/graylog2 ~/graylog2
 
 sed -i -e 's|#adminpass=|adminpass='$password'|' ~/graylog2/install_graylog2_90_$1.sh
 sed -i -e 's|echo -n "Enter a password to use for the admin account to login to the Graylog2 webUI: "|#echo -n "Enter a password to use for the admin account to login to the Graylog2 webUI: "|' ~/graylog2/install_graylog2_90_$1.sh
