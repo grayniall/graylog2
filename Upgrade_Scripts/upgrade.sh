@@ -43,13 +43,15 @@ function GetIPAddress() {
 	SERVERALIAS=$IPADDY
 }
 
+GetIPAddress
+
+# Save existing config file
+sudo cp /opt/graylog2-web-interface/conf/graylog-web-interface.conf ~/graylog-web-interface.conf
+
 rm -rf /opt/graylog2-server*
 rm -rf /opt/graylog2-web-interface*
 rm -f /opt/graylog2-server*.*gz
 rm -f /opt/graylog2-web-interface*.*gz
-
-GetIPAddress
-sudo cp /opt/graylog2-web-interface/conf/graylog-web-interface.conf ~/graylog-web-interface.conf
 
 # Download Elasticsearch, Graylog2-Server and Graylog2-Web-Interface
 DownloadAndExtract https://packages.graylog2.org/releases/graylog2-server/$GRAYLOGSERVER_FILE $GRAYLOGSERVER_FILE $GRAYLOGSERVER_VERSION "graylog2-server"
