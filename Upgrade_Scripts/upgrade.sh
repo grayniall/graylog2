@@ -49,12 +49,12 @@ rm -f /opt/graylog2-server*.*gz
 rm -f /opt/graylog2-web-interface*.*gz
 
 GetIPAddress
+sudo cp /opt/graylog2-web-interface/conf/graylog-web-interface.conf ~/graylog-web-interface.conf
 
 # Download Elasticsearch, Graylog2-Server and Graylog2-Web-Interface
 DownloadAndExtract https://packages.graylog2.org/releases/graylog2-server/$GRAYLOGSERVER_FILE $GRAYLOGSERVER_FILE $GRAYLOGSERVER_VERSION "graylog2-server"
 DownloadAndExtract https://packages.graylog2.org/releases/graylog2-web-interface/$GRAYLOGWEB_FILE $GRAYLOGWEB_FILE $GRAYLOGWEB_VERSION "graylog2-web-interface"
 
-sudo cp /opt/graylog2-web-interface/conf/graylog-web-interface.conf ~/graylog-web-interface.conf
 sudo sed -i -e 's|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog/server/server.conf}|GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog.conf}|' /opt/graylog2-server/bin/graylogctl
 
 service graylog2-server start
