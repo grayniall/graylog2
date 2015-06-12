@@ -77,7 +77,7 @@ rm $DOWNLOAD_DIRECTORY/*deb -f
 # Restart All Services
 echo "Restarting All Services Required for Graylog2 to work"
 service elasticsearch restart
-service mongod restart
+service mongodb restart
 service rsyslog restart
 
 sudo cp ~/graylog-web-interface.conf /opt/graylog2-web-interface/conf/graylog-web-interface.conf
