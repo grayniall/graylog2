@@ -8,9 +8,9 @@ set -e
 exec 2> >(tee "./graylog2/install_graylog2.err")
 exec > >(tee "./graylog2/install_graylog2.log")
 
-GRAYLOGSERVER_VERSION="graylog-1.1.0-beta.2"
+GRAYLOGSERVER_VERSION="graylog-1.1.2"
 GRAYLOGSERVER_FILE="$GRAYLOGSERVER_VERSION.tgz"
-GRAYLOGWEB_VERSION="graylog-web-interface-1.1.0-beta.2"
+GRAYLOGWEB_VERSION="graylog-web-interface-1.1.2"
 GRAYLOGWEB_FILE="$GRAYLOGWEB_VERSION.tgz"
 
 DOWNLOAD_DIRECTORY="/opt"
